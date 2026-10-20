@@ -18,6 +18,19 @@ a small PR, and the second wave goes green.
 
 That red → green pair is the demo. The app is not the product; the evidence is.
 
+## Reproduce the defect by hand
+
+Open the deployed page, enter `10.00` in **Bill amount**, `3` in **People**, and leave
+**Tip** at `0`.
+
+- **Each person pays** reads `$3.33` — plausible on its own.
+- **Shares total** reads `$9.99`, not `$10.00`.
+- **Remaining** reads `$0.01`.
+- The note under the results says `Unbalanced — $0.01 is missing from the shares.`
+
+Every number looks reasonable; the split is still wrong. That is the failure mode the
+suite exists to catch.
+
 ## Run it
 
 ```bash

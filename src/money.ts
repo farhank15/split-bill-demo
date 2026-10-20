@@ -1,14 +1,10 @@
 // Money maths for the split-bill demo.
 //
-// The contract (see SPEC.md) says every share is rounded half-up to the nearest
-// cent and the shares must add up to the bill exactly. The current release
-// rounds DOWN, which loses a cent whenever the division does not terminate —
-// the demo's intentional defect.
+// The contract (see SPEC.md) says money is rounded half-up to the nearest cent
+// and the shares must add up to the bill exactly. When an even split does not
+// terminate, the remainder is absorbed by the last share, so nothing is lost.
 
 export const roundCents = (value: number): number => Math.round((value + Number.EPSILON) * 100) / 100
-
-// matcha:debt rounding is floor here on purpose (the demo's seeded defect); replace with half-up + remainder distribution in the fix PR
-const toCents = (value: number): number => Math.floor(value * 100) / 100
 
 export interface Split {
   /** Bill plus tip, rounded to cents. */
@@ -28,12 +24,21 @@ export function splitBill(bill: number, people: number, tipPercent = 0): Split {
   if (!Number.isInteger(people) || people < 1) throw new Error('people must be a whole number of at least 1')
   if (!Number.isFinite(tipPercent) || tipPercent < 0) throw new Error('tip must be zero or more')
 
-  const total = roundCents(bill * (1 + tipPercent / 100))
-  const perPerson = toCents(total / people)
-  const shares = Array.from({ length: people }, () => perPerson)
-  const sharesTotal = roundCents(perPerson * people)
+  // Do the arithmetic in integer cents so the split can be exact — no
+  // floating-point cent can go missing on the way.
+  const totalCents = Math.round(bill * 100 * (1 + tipPercent / 100))
+  const total = totalCents / 100
 
-  return { total, perPerson, shares, sharesTotal, remaining: roundCents(total - sharesTotal) }
+  // Everyone pays a base share floored to the cent; the leftover cents (at most
+  // one per person minus one) are absorbed by the last share per SPEC.md.
+  const baseCents = Math.floor(totalCents / people)
+  const shares = Array.from({ length: people }, (_, index) =>
+    index === people - 1
+      ? (totalCents - baseCents * (people - 1)) / 100
+      : baseCents / 100,
+  )
+
+  return { total, perPerson: baseCents / 100, shares, sharesTotal: total, remaining: 0 }
 }
 
 export const money = (value: number): string => `$${value.toFixed(2)}`

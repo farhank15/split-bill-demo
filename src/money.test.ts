@@ -7,6 +7,8 @@ describe('splitBill', () => {
     const split = splitBill(10, 3)
     expect(split.sharesTotal).toBe(split.total)
     expect(split.remaining).toBe(0)
+    // The leftover cent is absorbed by the last share (SPEC.md).
+    expect(split.shares).toEqual([3.33, 3.33, 3.34])
   })
 
   it('applies the tip before splitting (SV-SPL-02)', () => {
