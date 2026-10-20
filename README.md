@@ -1,5 +1,7 @@
 # Split Bill — a Meerkat demo target
 
+[![test strength](https://meerkat-app.vercel.app/api/badge/tsi.svg?project=split-bill)](https://meerkat-app.vercel.app/share/split-bill)
+
 A deliberately small app used to show what Meerkat is for: a green suite is not the
 same as a correct one.
 
